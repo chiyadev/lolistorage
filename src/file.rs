@@ -1,35 +1,21 @@
-use crate::{config::CONFIG, storage::STORAGE};
-use log::debug;
+use crate::storage::get_file;
 use rocket::{
     get,
     http::{ContentType, Header, Status},
     response::Responder,
     Request, Response,
 };
-use rusoto_s3::{GetObjectOutput, GetObjectRequest, S3};
+use rusoto_s3::GetObjectOutput;
 use std::{borrow::Cow, path::PathBuf};
 
 #[get("/files/<path..>")]
 pub async fn file(path: PathBuf) -> Option<FileResponse> {
-    let key = path.to_string_lossy().into_owned();
-
-    match STORAGE
-        .get_object(GetObjectRequest {
-            bucket: CONFIG.s3.bucket.clone(),
-            key: key.clone(),
-            ..Default::default()
-        })
+    get_file(path.to_string_lossy().as_ref())
         .await
-    {
-        Ok(result) => Some(FileResponse {
+        .map(|x| FileResponse {
             path,
-            result: Some(result),
-        }),
-        Err(err) => {
-            debug!("could not read file {}: {}", key, err);
-            None
-        }
-    }
+            result: Some(x),
+        })
 }
 
 pub struct FileResponse {
