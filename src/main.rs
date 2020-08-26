@@ -27,7 +27,10 @@ fn rocket() -> Rocket {
     let _ = CONFIG;
 
     ignite()
-        .mount("/", routes![index, dir::dir, file::file, api::api])
+        .mount(
+            "/",
+            routes![index, dir::dir, file::file, api::api, api::api_index],
+        )
         .attach(Template::fairing())
 }
 

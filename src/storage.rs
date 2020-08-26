@@ -6,7 +6,9 @@ use rusoto_core::{
     credential::{AwsCredentials, CredentialsError, ProvideAwsCredentials},
     HttpClient,
 };
-use rusoto_s3::{GetObjectOutput, GetObjectRequest, S3Client, S3};
+use rusoto_s3::{
+    GetObjectOutput, GetObjectRequest, ListObjectsOutput, ListObjectsRequest, S3Client, S3,
+};
 
 pub static STORAGE: Lazy<S3Client> = Lazy::new(|| {
     let S3Config {
@@ -45,6 +47,34 @@ pub async fn get_file(key: &str) -> Option<GetObjectOutput> {
         Ok(result) => Some(result),
         Err(err) => {
             debug!("could not read file {}: {}", key, err);
+            None
+        }
+    }
+}
+
+const LIST_SIZE: i64 = 200;
+
+pub async fn list_dir(key: &str, marker: Option<String>) -> Option<ListObjectsOutput> {
+    let prefix = if key.len() == 0 {
+        None
+    } else {
+        Some(format!("{}/", key))
+    };
+
+    match STORAGE
+        .list_objects(ListObjectsRequest {
+            bucket: CONFIG.s3.bucket.clone(),
+            prefix,
+            max_keys: Some(LIST_SIZE),
+            delimiter: Some("/".into()),
+            marker,
+            ..Default::default()
+        })
+        .await
+    {
+        Ok(result) => Some(result),
+        Err(err) => {
+            debug!("could not list directory {}: {}", key, err);
             None
         }
     }
