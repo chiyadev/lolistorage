@@ -270,9 +270,9 @@ pub fn icon_helper<'reg, 'rc>(
         .ok_or_else(|| RenderError::new("Param not found for helper \"icon\""))?;
 
     let value = param.value().as_str().unwrap_or("");
-    let extension = &value[value.rfind('.').unwrap_or(0)..];
+    let ext: &str = &value[value.rfind('.').unwrap_or(0)..].to_lowercase();
 
-    out.write(&r.render_with_context(ICON_EXTS.get(extension).unwrap_or(&"icons/document"), c)?)?;
+    out.write(&r.render_with_context(ICON_EXTS.get(ext).unwrap_or(&"icons/document"), c)?)?;
 
     Ok(())
 }
