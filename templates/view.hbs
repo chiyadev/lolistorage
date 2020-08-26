@@ -1,9 +1,20 @@
 {{#*inline "page"}}
 
-<div class="p-4 text-xl font-bold">
-  {{>icons/folder-open}}
+<div class="p-4 text-xl font-bold cursor-default">
+  <a class="hover:text-gray-600 transition duration-200" href="/view">
+    {{>icons/folder-open}}
+  </a>
 
-  /{{list.path}}
+  /
+  {{#each path_parts}}
+  {{#if @index}}
+  /
+  {{/if}}
+
+  <a class="hover:text-gray-600 transition duration-200" href="/view/{{full_name}}">
+    {{name}}
+  </a>
+  {{/each}}
 </div>
 
 <div class="text-sm rounded overflow-hidden border border-gray-300 divide-y divide-gray-300">
