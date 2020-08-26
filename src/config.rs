@@ -1,17 +1,18 @@
 use config::{Config, ConfigError, Environment, File};
 use once_cell::sync::Lazy;
-use rusoto_core::{credential::AwsCredentials, Region};
-use serde::Deserialize;
+use rusoto_core::Region;
+use serde::{Deserialize, Serialize};
 use std::env;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct S3Config {
     pub region: Region,
     pub bucket: String,
-    pub credentials: AwsCredentials,
+    pub access_key: String,
+    pub secret_key: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Configuration {
     pub s3: S3Config,
 }
