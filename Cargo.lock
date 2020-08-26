@@ -925,6 +925,7 @@ dependencies = [
  "rusoto_core",
  "rusoto_s3",
  "serde 1.0.115",
+ "serde_json",
 ]
 
 [[package]]
