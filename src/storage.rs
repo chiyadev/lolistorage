@@ -1,4 +1,7 @@
-use crate::config::{S3Config, CONFIG};
+use crate::{
+    config::{S3Config, CONFIG},
+    header::RangeHeader,
+};
 use log::debug;
 use once_cell::sync::Lazy;
 use rusoto_core::{credential::StaticProvider, HttpClient, HttpConfig};
@@ -26,13 +29,14 @@ pub static STORAGE: Lazy<S3Client> = Lazy::new(|| {
     )
 });
 
-pub async fn get_file(key: &str) -> Option<GetObjectOutput> {
+pub async fn get_file(key: &str, range: Option<RangeHeader>) -> Option<GetObjectOutput> {
     let key = key.trim_start_matches('/');
 
     match STORAGE
         .get_object(GetObjectRequest {
             bucket: CONFIG.s3.bucket.clone(),
             key: key.into(),
+            range: range.map(|r| r.to_header()),
             ..Default::default()
         })
         .await

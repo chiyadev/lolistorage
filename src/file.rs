@@ -1,4 +1,7 @@
-use crate::storage::{get_file, STORAGE_BUFFER_SIZE};
+use crate::{
+    header::RangeHeader,
+    storage::{get_file, STORAGE_BUFFER_SIZE},
+};
 use rocket::{
     get,
     http::{ContentType, Header, Status},
@@ -9,8 +12,8 @@ use rusoto_s3::GetObjectOutput;
 use std::{borrow::Cow, path::PathBuf};
 
 #[get("/files/<path..>")]
-pub async fn file(path: PathBuf) -> Option<FileResponse> {
-    get_file(path.to_string_lossy().as_ref())
+pub async fn file(path: PathBuf, range: Option<RangeHeader>) -> Option<FileResponse> {
+    get_file(path.to_string_lossy().as_ref(), range)
         .await
         .map(|x| FileResponse {
             path,
@@ -28,6 +31,7 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for FileResponse {
         if let Some(result) = self.result.take() {
             if let Some(stream) = result.body {
                 let mut response = Response::<'o>::build();
+                response.status(Status::Ok);
 
                 response.header(Header::new(
                     "Content-Disposition",
@@ -54,7 +58,9 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for FileResponse {
                 }
 
                 if let Some(range) = result.content_range {
-                    response.header(Header::new("Content-Range", range));
+                    response
+                        .status(Status::PartialContent)
+                        .header(Header::new("Content-Range", range));
                 }
 
                 response.header(result.content_type.map_or_else(

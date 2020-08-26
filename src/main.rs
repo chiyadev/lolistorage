@@ -13,6 +13,7 @@ mod dir;
 mod error;
 mod file;
 mod handlebars;
+mod header;
 mod storage;
 
 #[launch]
