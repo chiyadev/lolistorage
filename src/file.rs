@@ -62,6 +62,10 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for FileResponse {
                     |s| Header::new("Content-Type", s.clone()),
                 ));
 
+                if let Some(e_tag) = result.e_tag {
+                    response.header(Header::new("ETag", e_tag));
+                }
+
                 if let Some(modified) = result.last_modified {
                     response.header(Header::new("Last-Modified", modified));
                 }
