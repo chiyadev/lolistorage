@@ -2,7 +2,7 @@
 
 use crate::{
     config::CONFIG,
-    handlebars::{if_exists_helper, if_not_null_helper},
+    handlebars::{icon_helper, if_exists_helper, if_not_null_helper},
 };
 use rocket::{get, ignite, launch, response::Redirect, routes, uri, Rocket};
 use rocket_contrib::templates::Template;
@@ -49,6 +49,10 @@ fn rocket() -> Rocket {
             engine
                 .handlebars
                 .register_helper("if_not_null", Box::new(if_not_null_helper));
+
+            engine
+                .handlebars
+                .register_helper("icon", Box::new(icon_helper));
         }))
 }
 
