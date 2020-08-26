@@ -7,9 +7,11 @@
     API
   </a>
 
+  {{#each config.app.footer}}
   <a class="text-gray-500 hover:text-gray-800 transition duration-200" target="_blank" rel="noopener noreferrer"
-    href="https://github.com/chiyadev/lolistorage">
+    href="{{href}}">
 
-    powered by lolistorage
+    {{text}}
   </a>
+  {{/each}}
 </div>
