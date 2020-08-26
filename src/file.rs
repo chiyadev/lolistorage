@@ -1,4 +1,4 @@
-use crate::storage::get_file;
+use crate::storage::{get_file, STORAGE_BUFFER_SIZE};
 use rocket::{
     get,
     http::{ContentType, Header, Status},
@@ -77,7 +77,9 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for FileResponse {
                 }
 
                 // body stream
-                return response.streamed_body(stream.into_async_read()).ok();
+                return response
+                    .chunked_body(stream.into_async_read(), STORAGE_BUFFER_SIZE)
+                    .ok();
             }
         }
 

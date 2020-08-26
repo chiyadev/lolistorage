@@ -1,10 +1,12 @@
 use crate::config::{S3Config, CONFIG};
 use log::debug;
 use once_cell::sync::Lazy;
-use rusoto_core::{credential::StaticProvider, HttpClient};
+use rusoto_core::{credential::StaticProvider, HttpClient, HttpConfig};
 use rusoto_s3::{
     GetObjectOutput, GetObjectRequest, ListObjectsOutput, ListObjectsRequest, S3Client, S3,
 };
+
+pub const STORAGE_BUFFER_SIZE: usize = 1024 * 1024;
 
 pub static STORAGE: Lazy<S3Client> = Lazy::new(|| {
     let S3Config {
@@ -14,8 +16,11 @@ pub static STORAGE: Lazy<S3Client> = Lazy::new(|| {
         ..
     } = CONFIG.s3.clone();
 
+    let mut http_config = HttpConfig::new();
+    http_config.read_buf_size(STORAGE_BUFFER_SIZE);
+
     S3Client::new_with(
-        HttpClient::new().expect("could not create http client for s3"),
+        HttpClient::new_with_config(http_config).expect("could not create http client for s3"),
         StaticProvider::new_minimal(access_key, secret_key),
         region,
     )
