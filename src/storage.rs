@@ -22,6 +22,8 @@ pub static STORAGE: Lazy<S3Client> = Lazy::new(|| {
 });
 
 pub async fn get_file(key: &str) -> Option<GetObjectOutput> {
+    let key = key.trim_start_matches('/');
+
     match STORAGE
         .get_object(GetObjectRequest {
             bucket: CONFIG.s3.bucket.clone(),
@@ -41,6 +43,8 @@ pub async fn get_file(key: &str) -> Option<GetObjectOutput> {
 const LIST_SIZE: i64 = 200;
 
 pub async fn list_dir(key: &str, marker: Option<String>) -> Option<ListObjectsOutput> {
+    let key = key.trim_start_matches('/');
+
     let prefix = if key.len() == 0 {
         None
     } else {

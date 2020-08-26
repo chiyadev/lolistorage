@@ -26,10 +26,12 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
     if let Some(result) = result {
         list.next_key = result.next_marker;
 
+        let name_offset = if path.len() == 0 { 0 } else { path.len() + 1 };
+
         if let Some(files) = result.contents {
             for file in files {
                 list.files.push(File {
-                    name: file.key.as_ref().map_or("", |s| &s)[path.len() + 1..].into(),
+                    name: file.key.as_ref().map_or("", |s| &s)[name_offset..].into(),
                     full_name: file.key.unwrap_or(String::new()),
                     size: file.size.unwrap_or(0),
                     e_tag: file.e_tag.map(|s| s.trim_matches('"').into()),
@@ -41,7 +43,7 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
         if let Some(directories) = result.common_prefixes {
             for directory in directories {
                 let full_name = directory.prefix.as_ref().map_or("", |s| &s[..s.len() - 1]);
-                let name = &full_name[path.len() + 1..];
+                let name = &full_name[name_offset..];
 
                 list.directories.push(Directory {
                     full_name: full_name.into(),
