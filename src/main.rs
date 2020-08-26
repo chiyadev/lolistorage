@@ -1,7 +1,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 use crate::config::CONFIG;
-use rocket::{get, ignite, launch, routes, Rocket};
+use rocket::{get, ignite, launch, response::Redirect, routes, uri, Rocket};
 use rocket_contrib::templates::Template;
 
 mod api;
@@ -41,6 +41,6 @@ fn rocket() -> Rocket {
 }
 
 #[get("/")]
-async fn index() -> Template {
-    dir::dir_index(None).await
+async fn index() -> Redirect {
+    Redirect::to(uri!(dir::dir_index: _))
 }

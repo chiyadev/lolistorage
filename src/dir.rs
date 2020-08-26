@@ -3,7 +3,7 @@ use rocket::get;
 use rocket_contrib::templates::Template;
 use std::path::PathBuf;
 
-#[get("/?<begin>")]
+#[get("/view?<begin>")]
 pub async fn dir_index(begin: Option<String>) -> Template {
     dir(PathBuf::new(), begin).await
 }
