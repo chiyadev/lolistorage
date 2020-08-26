@@ -7,7 +7,7 @@ use rusoto_core::{
 };
 use rusoto_s3::S3Client;
 
-pub static Storage: Lazy<S3Client> = Lazy::new(|| {
+pub static STORAGE: Lazy<S3Client> = Lazy::new(|| {
     let S3Config {
         credentials,
         region,
