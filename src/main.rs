@@ -1,6 +1,9 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-use crate::config::CONFIG;
+use crate::{
+    config::CONFIG,
+    handlebars::{if_exists_helper, if_not_null_helper},
+};
 use rocket::{get, ignite, launch, response::Redirect, routes, uri, Rocket};
 use rocket_contrib::templates::Template;
 
@@ -9,6 +12,7 @@ mod config;
 mod dir;
 mod error;
 mod file;
+mod handlebars;
 mod storage;
 
 #[launch]
@@ -37,7 +41,15 @@ fn rocket() -> Rocket {
                 api::api_index
             ],
         )
-        .attach(Template::fairing())
+        .attach(Template::custom(|engine| {
+            engine
+                .handlebars
+                .register_helper("if_exists", Box::new(if_exists_helper));
+
+            engine
+                .handlebars
+                .register_helper("if_not_null", Box::new(if_not_null_helper));
+        }))
 }
 
 #[get("/")]
