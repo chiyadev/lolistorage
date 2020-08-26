@@ -5,16 +5,29 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Configuration {
+    pub app: AppConfig,
+    pub s3: S3Config,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AppConfig {
+    pub name: String,
+    pub footer: Vec<FooterLink>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct FooterLink {
+    pub text: String,
+    pub href: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct S3Config {
     pub region: Region,
     pub bucket: String,
     pub access_key: String,
     pub secret_key: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Configuration {
-    pub s3: S3Config,
 }
 
 impl Configuration {
