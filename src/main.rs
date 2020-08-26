@@ -3,7 +3,6 @@
 use crate::config::CONFIG;
 use rocket::{get, ignite, launch, routes, Rocket};
 use rocket_contrib::templates::Template;
-use std::path::PathBuf;
 
 mod api;
 mod config;
@@ -29,12 +28,19 @@ fn rocket() -> Rocket {
     ignite()
         .mount(
             "/",
-            routes![index, dir::dir, file::file, api::api, api::api_index],
+            routes![
+                index,
+                file::file,
+                dir::dir,
+                dir::dir_index,
+                api::api,
+                api::api_index
+            ],
         )
         .attach(Template::fairing())
 }
 
 #[get("/")]
 async fn index() -> Template {
-    dir::dir(PathBuf::new()).await
+    dir::dir_index(None).await
 }
