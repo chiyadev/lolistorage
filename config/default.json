@@ -1,1 +1,11 @@
-{}
+{
+  "app": {
+    "name": "lolistorage",
+    "footer": [
+      {
+        "text": "powered by lolistorage",
+        "href": "https://github.com/chiyadev/lolistorage"
+      }
+    ]
+  }
+}
