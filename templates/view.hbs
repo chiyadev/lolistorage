@@ -1,7 +1,7 @@
 {{#*inline "page"}}
 
 <div class="p-4 text-xl font-bold cursor-default">
-  <a class="hover:text-gray-600 transition duration-200" href="/view">
+  <a class="hover:text-blue-500 transition duration-200" href="/view">
     {{>icons/folder-open}}
   </a>
 
@@ -11,7 +11,7 @@
   /
   {{/if}}
 
-  <a class="hover:text-gray-600 transition duration-200" href="/view/{{full_name}}">
+  <a class="hover:text-blue-500 transition duration-200" href="/view/{{full_name}}">
     {{name}}
   </a>
   {{/each}}
@@ -19,17 +19,50 @@
 
 <div class="text-sm rounded overflow-hidden border border-gray-300 divide-y divide-gray-300">
   {{#if_not_null list.parent_path}}
+  <a class="block" href="/view/{{list.parent_path}}">
+    <div class="text-gray-600 bg-gray-100 hover:bg-gray-200 transition duration-200 px-4 py-2">
+      <div class="inline-block w-6 text-center">{{>icons/chevron-left}}</div>
+      ..
+    </div>
+  </a>
   {{>view/folder name=".." full_name=list.parent_path}}
   {{/if_not_null}}
 
   {{#each list.directories}}
-  {{>view/folder}}
+  <a class="block" href="/view/{{full_name}}">
+    <div class="text-gray-600 hover:bg-gray-100 transition duration-200 px-4 py-2">
+      <div class="inline-block w-6 text-center">{{>icons/folder}}</div>
+
+      {{name}}
+    </div>
+  </a>
   {{/each}}
 
   {{#each list.files}}
-  {{>view/file}}
+  <a class="block" href="/files/{{full_name}}">
+    <div class="text-gray-600 hover:bg-gray-100 transition duration-200 px-4 py-2">
+      <div class="inline-block w-6 text-center">{{icon name}}</div>
+
+      {{name}}
+    </div>
+  </a>
   {{/each}}
 </div>
+
+{{#if index_page}}
+<div class="mt-4 text-sm rounded overflow-hidden border border-gray-300">
+  <div class="text-xs px-4 py-2">
+    <a class="text-gray-600 hover:text-gray-800 transition duration-200" href="/files/{{index_page.full_name}}">
+      {{index_page.name}}
+    </a>
+  </div>
+
+  <div class="p-6 markdown-body">
+    {{index_page.content}}
+    {{{index_page.content_raw}}}
+  </div>
+</div>
+{{/if}}
 
 {{/inline}}
 {{~>layout~}}
