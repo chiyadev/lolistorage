@@ -11,11 +11,13 @@ pub async fn api_index(begin: Option<String>) -> Json<List> {
 
 #[get("/api/<path..>?<begin>")]
 pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
+    let parent_path = path.parent().map(|p| p.to_string_lossy());
     let path = path.to_string_lossy();
     let result = list_dir(path.as_ref(), begin).await;
 
     let mut list = List {
         path: path.as_ref().to_owned(),
+        parent_path: parent_path.map(|s| s.into_owned()),
         files: Vec::new(),
         directories: Vec::new(),
         next_key: None,
@@ -55,6 +57,7 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
 #[derive(Serialize)]
 pub struct List {
     pub path: String,
+    pub parent_path: Option<String>,
     pub files: Vec<File>,
     pub directories: Vec<Directory>,
     pub next_key: Option<String>,
