@@ -12,5 +12,5 @@ pub async fn dir_index(begin: Option<String>) -> Template {
 pub async fn dir(path: PathBuf, begin: Option<String>) -> Template {
     let list = api(path, begin).await.into_inner();
 
-    Template::render("index", list)
+    Template::render("view", list)
 }
