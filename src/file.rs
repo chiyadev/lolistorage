@@ -1,11 +1,16 @@
 use crate::{config::CONFIG, storage::STORAGE};
 use log::debug;
-use rocket::{get, response::Stream, tokio::io::AsyncRead};
-use rusoto_s3::{GetObjectRequest, S3};
-use std::path::PathBuf;
+use rocket::{
+    get,
+    http::{ContentType, Header, Status},
+    response::Responder,
+    Request, Response,
+};
+use rusoto_s3::{GetObjectOutput, GetObjectRequest, S3};
+use std::{borrow::Cow, path::PathBuf};
 
 #[get("/files/<path..>")]
-pub async fn file(path: PathBuf) -> Option<Stream<impl AsyncRead>> {
+pub async fn file(path: PathBuf) -> Option<FileResponse> {
     let key = path.to_string_lossy().into_owned();
 
     match STORAGE
@@ -16,15 +21,76 @@ pub async fn file(path: PathBuf) -> Option<Stream<impl AsyncRead>> {
         })
         .await
     {
-        Ok(result) => {
-            if let Some(body) = result.body {
-                return Some(Stream::chunked(body.into_async_read(), 16384));
-            }
-        }
+        Ok(result) => Some(FileResponse {
+            path,
+            result: Some(result),
+        }),
         Err(err) => {
             debug!("could not read file {}: {}", key, err);
+            None
         }
     }
+}
 
-    None
+pub struct FileResponse {
+    path: PathBuf,
+    result: Option<GetObjectOutput>,
+}
+
+impl<'r, 'o: 'r> Responder<'r, 'o> for FileResponse {
+    fn respond_to(mut self, _request: &'r Request<'_>) -> rocket::response::Result<'o> {
+        if let Some(result) = self.result.take() {
+            if let Some(stream) = result.body {
+                let mut response = Response::<'o>::build();
+
+                response.header(Header::new(
+                    "Content-Disposition",
+                    result.content_disposition.map_or_else(
+                        || {
+                            format!(
+                                "inline;filename={}",
+                                self.path
+                                    .file_name()
+                                    .map(|s| s.to_string_lossy())
+                                    .unwrap_or(Cow::Borrowed("unknown"))
+                            )
+                        },
+                        |s| s,
+                    ),
+                ));
+
+                if let Some(language) = result.content_language {
+                    response.header(Header::new("Content-Language", language));
+                }
+
+                if let Some(length) = result.content_length {
+                    response.header(Header::new("Content-Length", length.to_string()));
+                }
+
+                if let Some(range) = result.content_range {
+                    response.header(Header::new("Content-Range", range));
+                }
+
+                response.header(result.content_type.map_or_else(
+                    || ContentType::Binary.into(),
+                    |s| Header::new("Content-Type", s.clone()),
+                ));
+
+                if let Some(modified) = result.last_modified {
+                    response.header(Header::new("Last-Modified", modified));
+                }
+
+                if let Some(meta) = result.metadata {
+                    for (key, value) in meta.iter() {
+                        response.header(Header::new(key.clone(), value.clone()));
+                    }
+                }
+
+                // body stream
+                return response.streamed_body(stream.into_async_read()).ok();
+            }
+        }
+
+        Err(Status::InternalServerError)
+    }
 }
