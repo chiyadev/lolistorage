@@ -15,6 +15,7 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
     let result = list_dir(path.as_ref(), begin).await;
 
     let mut list = List {
+        path: path.as_ref().to_owned(),
         files: Vec::new(),
         directories: Vec::new(),
         next_key: None,
@@ -53,6 +54,7 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
 
 #[derive(Serialize)]
 pub struct List {
+    pub path: String,
     pub files: Vec<File>,
     pub directories: Vec<Directory>,
     pub next_key: Option<String>,
