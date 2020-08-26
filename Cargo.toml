@@ -4,6 +4,11 @@ version = "0.1.0"
 authors = ["chiya.dev <contact@chiya.dev>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+log = "~0.4"
+env_logger = "~0.7"
+config = "~0.10"
+serde = { version = "~1.0", features = ["derive"] }
+rocket = { git = "https://github.com/SergioBenitez/Rocket", version = "0.5.0-dev" }
+rocket_contrib = { git = "https://github.com/SergioBenitez/Rocket", version = "0.5.0-dev", features = ["handlebars_templates"] }
+once_cell = "~1.4"
