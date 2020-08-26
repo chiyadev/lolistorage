@@ -5,6 +5,7 @@ use rocket_contrib::templates::Template;
 use std::path::PathBuf;
 
 mod api;
+mod storage;
 mod config;
 mod dir;
 mod error;

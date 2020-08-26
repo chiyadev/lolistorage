@@ -1,10 +1,20 @@
 use config::{Config, ConfigError, Environment, File};
 use once_cell::sync::Lazy;
+use rusoto_core::{credential::AwsCredentials, Region};
 use serde::Deserialize;
 use std::env;
 
-#[derive(Debug, Deserialize)]
-pub struct Configuration {}
+#[derive(Debug, Deserialize, Clone)]
+pub struct S3Config {
+    pub region: Region,
+    pub bucket: String,
+    pub credentials: AwsCredentials,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Configuration {
+    pub s3: S3Config,
+}
 
 impl Configuration {
     pub fn new() -> Result<Self, ConfigError> {
