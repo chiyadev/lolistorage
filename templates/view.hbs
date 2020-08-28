@@ -47,6 +47,14 @@
     </div>
   </a>
   {{/each}}
+
+  {{#if list.next_key}}
+  <a class="block" href="/view/{{list.path}}/?key={{list.next_key}}">
+    <div class="text-gray-600 hover:bg-gray-100 transition duration-200 px-4 py-2">
+      <div class="inline-block w-6 text-center">{{>icons/dots-horizontal}}</div>
+    </div>
+  </a>
+  {{/if}}
 </div>
 
 {{#if index_page}}
