@@ -1,18 +1,15 @@
 {{#*inline "page"}}
 
 <div class="p-4 text-xl font-bold cursor-default">
-  <a class="hover:text-blue-500 transition duration-200" href="/view">
-    {{>icons/folder-open}}
+  <a class="hover:text-gray-600 transition duration-200" href="/view">
+    {{>icons/folder-open}} /
   </a>
 
-  /
   {{#each path_parts}}
-  {{#if @index}}
-  /
-  {{/if}}
-
-  <a class="hover:text-blue-500 transition duration-200" href="/view/{{full_name}}">
+  <a class="hover:text-gray-600 transition duration-200" href="/view/{{full_name}}">
     {{name}}
+
+    {{#unless @last}}/{{/unless}}
   </a>
   {{/each}}
 </div>
