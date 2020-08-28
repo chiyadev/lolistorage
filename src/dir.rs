@@ -3,8 +3,15 @@ use crate::{
     config::{Configuration, CONFIG},
     storage::get_file,
 };
+use async_trait::async_trait;
 use pulldown_cmark::{html::push_html, Parser};
-use rocket::{get, response::Redirect, tokio::io::AsyncReadExt, uri};
+use rocket::{
+    get,
+    request::{FromRequest, Outcome},
+    response::Redirect,
+    tokio::io::AsyncReadExt,
+    uri, Request,
+};
 use rocket_contrib::templates::Template;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -32,12 +39,30 @@ struct IndexPage {
 }
 
 #[get("/view?<begin>")]
-pub async fn dir_index(begin: Option<String>) -> Result<Template, Redirect> {
-    dir(PathBuf::new(), begin).await
+pub async fn dir_index(
+    begin: Option<String>,
+    trailing_slash: TrailingSlashGuard,
+) -> Result<Template, Redirect> {
+    dir(PathBuf::new(), begin, trailing_slash).await
 }
 
 #[get("/view/<path..>?<begin>")]
-pub async fn dir(path: PathBuf, begin: Option<String>) -> Result<Template, Redirect> {
+pub async fn dir(
+    path: PathBuf,
+    begin: Option<String>,
+    trailing_slash: TrailingSlashGuard,
+) -> Result<Template, Redirect> {
+    // directory paths must have trailing slashes for relative links to work
+    if !trailing_slash.0 {
+        let path = path.to_string_lossy();
+
+        return Err(if path.len() == 0 {
+            Redirect::to("/view/")
+        } else {
+            Redirect::to(format!("/view/{}/", path))
+        });
+    }
+
     let list = api(path.clone(), begin).await.into_inner();
 
     // if list is empty, it's probably a file
@@ -143,4 +168,15 @@ pub async fn dir(path: PathBuf, begin: Option<String>) -> Result<Template, Redir
             index_page,
         },
     ))
+}
+
+pub struct TrailingSlashGuard(bool);
+
+#[async_trait]
+impl<'a, 'r> FromRequest<'a, 'r> for TrailingSlashGuard {
+    type Error = Redirect;
+
+    async fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        Outcome::Success(TrailingSlashGuard(request.uri().path().ends_with('/')))
+    }
 }
