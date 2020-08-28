@@ -30,10 +30,18 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
 
         if let Some(files) = result.contents {
             for file in files {
+                let name = &file.key.as_ref().map_or("", |s| &s)[name_offset..];
+                let size = file.size.unwrap_or(0);
+
+                // some people create an empty file to represent an empty directory
+                if name.len() == 0 && size == 0 {
+                    continue;
+                }
+
                 list.files.push(File {
-                    name: file.key.as_ref().map_or("", |s| &s)[name_offset..].into(),
+                    name: name.into(),
                     full_name: file.key.unwrap_or(String::new()),
-                    size: file.size.unwrap_or(0),
+                    size,
                     e_tag: file.e_tag.map(|s| s.trim_matches('"').into()),
                     last_modified: file.last_modified,
                 });
