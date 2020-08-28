@@ -3,7 +3,8 @@ use crate::{
     config::{Configuration, CONFIG},
     storage::get_file,
 };
-use rocket::{get, tokio::io::AsyncReadExt};
+use pulldown_cmark::{html::push_html, Parser};
+use rocket::{get, response::Redirect, tokio::io::AsyncReadExt, uri};
 use rocket_contrib::templates::Template;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -31,12 +32,19 @@ struct IndexPage {
 }
 
 #[get("/view?<begin>")]
-pub async fn dir_index(begin: Option<String>) -> Template {
+pub async fn dir_index(begin: Option<String>) -> Result<Template, Redirect> {
     dir(PathBuf::new(), begin).await
 }
 
 #[get("/view/<path..>?<begin>")]
-pub async fn dir(path: PathBuf, begin: Option<String>) -> Template {
+pub async fn dir(path: PathBuf, begin: Option<String>) -> Result<Template, Redirect> {
+    let list = api(path.clone(), begin).await.into_inner();
+
+    // if list is empty, it's probably a file
+    if list.files.len() == 0 && list.directories.len() == 0 {
+        return Err(Redirect::to(uri!(crate::file::file: path)));
+    }
+
     let title = path
         .file_name()
         .map_or(String::new(), |s| s.to_string_lossy().into_owned());
@@ -61,8 +69,6 @@ pub async fn dir(path: PathBuf, begin: Option<String>) -> Template {
 
         parts
     };
-
-    let list = api(path, begin).await.into_inner();
 
     let index_page = {
         let mut page = None;
@@ -100,12 +106,11 @@ pub async fn dir(path: PathBuf, begin: Option<String>) -> Template {
                 }),
 
                 ".md" => {
-                    let parser =
-                        pulldown_cmark::Parser::new_ext(&content, pulldown_cmark::Options::all());
+                    let parser = Parser::new_ext(&content, pulldown_cmark::Options::all());
 
                     let mut converted = String::new();
 
-                    pulldown_cmark::html::push_html(&mut converted, parser);
+                    push_html(&mut converted, parser);
 
                     Some(IndexPage {
                         name,
@@ -128,7 +133,7 @@ pub async fn dir(path: PathBuf, begin: Option<String>) -> Template {
         page
     };
 
-    Template::render(
+    Ok(Template::render(
         "view",
         &ViewContext {
             title,
@@ -137,5 +142,5 @@ pub async fn dir(path: PathBuf, begin: Option<String>) -> Template {
             path_parts,
             index_page,
         },
-    )
+    ))
 }
