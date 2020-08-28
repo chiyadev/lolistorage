@@ -16,6 +16,7 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
     let result = list_dir(path.as_ref(), begin).await;
 
     let mut list = List {
+        valid: false,
         path: path.as_ref().to_owned(),
         parent_path: parent_path.map(|s| s.into_owned()),
         files: Vec::new(),
@@ -29,6 +30,8 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
         let name_offset = if path.len() == 0 { 0 } else { path.len() + 1 };
 
         if let Some(files) = result.contents {
+            list.valid |= files.len() != 0;
+
             for file in files {
                 let name = &file.key.as_ref().map_or("", |s| &s)[name_offset..];
                 let size = file.size.unwrap_or(0);
@@ -49,6 +52,8 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
         }
 
         if let Some(directories) = result.common_prefixes {
+            list.valid |= directories.len() != 0;
+
             for directory in directories {
                 let full_name = directory.prefix.as_ref().map_or("", |s| &s[..s.len() - 1]);
                 let name = &full_name[name_offset..];
@@ -66,6 +71,7 @@ pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
 
 #[derive(Serialize)]
 pub struct List {
+    pub valid: bool,
     pub path: String,
     pub parent_path: Option<String>,
     pub files: Vec<File>,

@@ -65,8 +65,8 @@ pub async fn dir(
 
     let list = api(path.clone(), begin).await.into_inner();
 
-    // if list is empty, it's probably a file
-    if list.files.len() == 0 && list.directories.len() == 0 {
+    // list isn't valid, so we should be looking at a file instead
+    if !list.valid {
         return Err(Redirect::to(uri!(crate::file::file: path)));
     }
 
