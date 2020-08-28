@@ -38,18 +38,18 @@ struct IndexPage {
     content_raw: Option<String>,
 }
 
-#[get("/view?<begin>")]
+#[get("/view?<key>")]
 pub async fn dir_index(
-    begin: Option<String>,
+    key: Option<String>,
     trailing_slash: TrailingSlashGuard,
 ) -> Result<Template, Redirect> {
-    dir(PathBuf::new(), begin, trailing_slash).await
+    dir(PathBuf::new(), key, trailing_slash).await
 }
 
-#[get("/view/<path..>?<begin>")]
+#[get("/view/<path..>?<key>")]
 pub async fn dir(
     path: PathBuf,
-    begin: Option<String>,
+    key: Option<String>,
     trailing_slash: TrailingSlashGuard,
 ) -> Result<Template, Redirect> {
     // directory paths must have trailing slashes for relative links to work
@@ -63,7 +63,7 @@ pub async fn dir(
         });
     }
 
-    let list = api(path.clone(), begin).await.into_inner();
+    let list = api(path.clone(), key).await.into_inner();
 
     // list isn't valid, so we should be looking at a file instead
     if !list.valid {

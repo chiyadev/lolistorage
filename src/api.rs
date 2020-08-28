@@ -4,16 +4,16 @@ use rocket_contrib::json::Json;
 use serde::Serialize;
 use std::path::PathBuf;
 
-#[get("/api?<begin>")]
-pub async fn api_index(begin: Option<String>) -> Json<List> {
-    api(PathBuf::new(), begin).await
+#[get("/api?<key>")]
+pub async fn api_index(key: Option<String>) -> Json<List> {
+    api(PathBuf::new(), key).await
 }
 
-#[get("/api/<path..>?<begin>")]
-pub async fn api(path: PathBuf, begin: Option<String>) -> Json<List> {
+#[get("/api/<path..>?<key>")]
+pub async fn api(path: PathBuf, key: Option<String>) -> Json<List> {
     let parent_path = path.parent().map(|p| p.to_string_lossy());
     let path = path.to_string_lossy();
-    let result = list_dir(path.as_ref(), begin).await;
+    let result = list_dir(path.as_ref(), key).await;
 
     let mut list = List {
         valid: false,
